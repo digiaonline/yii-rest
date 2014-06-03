@@ -15,4 +15,16 @@ namespace nordsoftware\yii_rest\components;
  */
 abstract class ResponseData extends \CModel
 {
+    /**
+     * @inheritdoc
+     */
+    public function attributeNames()
+    {
+        $names = array();
+        $class = new \ReflectionClass($this);
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            $names[] = $property->name;
+        }
+        return $names;
+    }
 }

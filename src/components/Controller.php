@@ -119,19 +119,42 @@ abstract class Controller extends \CController
      */
     protected function serializeData($data)
     {
-        if (($data instanceof \CActiveRecord || $data instanceof ResponseData) && $data->hasErrors()) {
-            $this->response->setStatusCode(422);
+        if ($data instanceof \CModel) {
+            return $this->serializeModel($data);
+        } elseif ($data instanceof \CDataProvider) {
+            return $this->serializeDataProvider($data);
+        }
+        return $data;
+    }
+
+    /**
+     * Serializes a model.
+     * @param \CModel $model the model.
+     * @return \CModel|array the model or an array containing the model errors.
+     */
+    protected function serializeModel(\CModel $model)
+    {
+        if ($model->hasErrors()) {
             $result = array();
-            foreach ($data->getErrors() as $attribute => $errors) {
+            $this->response->setStatusCode(422);
+            foreach ($model->getErrors() as $attribute => $errors) {
                 $result[] = array(
                     'field' => $attribute,
                     'errors' => $errors,
                 );
             }
             return $result;
-        } elseif ($data instanceof \CDataProvider) {
-            return $data->getData();
         }
-        return $data;
+        return $model;
+    }
+
+    /**
+     * Serializes a data provider.
+     * @param \CDataProvider $dataProvider the provider.
+     * @return array the data.
+     */
+    protected function serializeDataProvider(\CDataProvider $dataProvider)
+    {
+        return $dataProvider->getData();
     }
 }
