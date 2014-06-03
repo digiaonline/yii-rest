@@ -9,6 +9,11 @@
 
 namespace nordsoftware\yii_rest\components;
 
+/**
+ * Controller base class for all REST API controller classes.
+ *
+ * @property Response $response the response object.
+ */
 abstract class Controller extends \CController
 {
     /**
@@ -102,9 +107,8 @@ abstract class Controller extends \CController
      */
     public function sendResponse($data, $statusCode = 200)
     {
-        $data = $this->serializeData($data);
-        $this->response->data = $data;
-        $this->response->statusCode = $statusCode;
+        $this->response->setStatusCode($statusCode);
+        $this->response->data = $this->serializeData($data);
         $this->response->send();
     }
 
@@ -115,8 +119,8 @@ abstract class Controller extends \CController
      */
     protected function serializeData($data)
     {
-        if (($data instanceof \CActiveRecord || $data instanceof ResponseObject) && $data->hasErrors()) {
-            $this->response->statusCode = 401;
+        if (($data instanceof \CActiveRecord || $data instanceof ResponseData) && $data->hasErrors()) {
+            $this->response->setStatusCode(422);
             $result = array();
             foreach ($data->getErrors() as $attribute => $errors) {
                 $result[] = array(

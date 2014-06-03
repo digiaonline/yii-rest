@@ -12,7 +12,7 @@ namespace nordsoftware\yii_rest\actions;
 use nordsoftware\yii_rest\components\Controller;
 
 /**
- * Action base class all REST API action classes.
+ * Action base class for all REST API action classes.
  *
  * @property Controller $controller The controller who owns this action.
  */

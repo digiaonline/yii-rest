@@ -9,6 +9,10 @@
 
 namespace nordsoftware\yii_rest\components;
 
+/**
+ * WebApplication class for the REST application.
+ * Overrides error and exception handling methods so that a proper REST response is always returned by the API.
+ */
 class WebApplication extends \CWebApplication
 {
     /**

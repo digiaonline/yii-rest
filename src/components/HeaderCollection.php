@@ -9,6 +9,9 @@
 
 namespace nordsoftware\yii_rest\components;
 
+/**
+ * HeaderCollection class for managing headers sent to the client with the REST response.
+ */
 class HeaderCollection implements \IteratorAggregate, \ArrayAccess, \Countable
 {
     /**
@@ -76,7 +79,7 @@ class HeaderCollection implements \IteratorAggregate, \ArrayAccess, \Countable
     public function set($name, $value = '')
     {
         $name = strtolower($name);
-        $this->_headers[$name] = (array) $value;
+        $this->_headers[$name] = (array)$value;
         return $this;
     }
 

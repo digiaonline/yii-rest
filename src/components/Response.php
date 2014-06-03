@@ -9,6 +9,10 @@
 
 namespace nordsoftware\yii_rest\components;
 
+/**
+ * Response object that represents an HTTP response.
+ * It holds the headers and content that is to be sent to the client and also controls the HTTP status code.
+ */
 class Response extends \CComponent
 {
     const FORMAT_RAW = 'raw';
@@ -152,7 +156,7 @@ class Response extends \CComponent
         if ($value === null) {
             $value = 200;
         }
-        $this->statusCode = (int) $value;
+        $this->statusCode = (int)$value;
         if ($this->getIsInvalid()) {
             throw new \CException(sprintf('The HTTP status code is invalid: %s', $value));
         }

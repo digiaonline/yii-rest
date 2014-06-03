@@ -9,6 +9,10 @@
 
 namespace nordsoftware\yii_rest\components;
 
+/**
+ * ErrorHandler class for the REST application.
+ * Overrides error and exception handling methods so that a proper REST response is always returned by the API.
+ */
 class ErrorHandler extends \CErrorHandler
 {
     /**
