@@ -15,6 +15,11 @@ namespace nordsoftware\yii_rest\components;
 class Serializer extends \CComponent
 {
     /**
+     * @var Response the response object.
+     */
+    public $response;
+
+    /**
      * Serializes the response data.
      * @param mixed $data the response data.
      * @return array the serialized data.

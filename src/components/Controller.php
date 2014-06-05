@@ -45,7 +45,10 @@ abstract class Controller extends \CController
     public function sendResponse($data, $statusCode = 200)
     {
         $this->response->setStatusCode($statusCode);
-        $this->response->data = \Yii::createComponent(array('class' => $this->serializer))->serialize($data);
+        $this->response->data = \Yii::createComponent(array(
+                'class' => $this->serializer,
+                'response' => $this->response,
+            ))->serialize($data);
         $this->response->send();
     }
 }

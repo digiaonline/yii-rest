@@ -44,7 +44,10 @@ class WebApplication extends \CWebApplication
     {
         $response = new Response();
         $response->setStatusCode($data->status);
-        $response->data = \Yii::createComponent(array('class' => $this->serializer))->serialize($data);
+        $response->data = \Yii::createComponent(array(
+                'class' => $this->serializer,
+                'response' => $response,
+            ))->serialize($data);
         $response->send();
     }
 }
