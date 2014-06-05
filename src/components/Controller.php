@@ -22,9 +22,40 @@ abstract class Controller extends \CController
     public $serializer = 'nordsoftware\yii_rest\components\Serializer';
 
     /**
+     * @var array list of accepted request content types for this controllers actions.
+     */
+    public $acceptedContentTypes = array(
+        'application/json'
+    );
+
+    /**
      * @var Response the response object.
      */
     private $_response;
+
+    /**
+     * @inheritdoc
+     */
+    public function filters()
+    {
+        return array(
+            'ensureContentType'
+        );
+    }
+
+    /**
+     * Filter for ensuring that the request has a specific content type.
+     * @param \CFilterChain $filterChain
+     * @throws \CHttpException if the content type does not match one of the configured ones.
+     */
+    public function filterEnsureContentType($filterChain)
+    {
+        $contentType = \Yii::app()->getRequest()->getContentType();
+        if (!in_array($contentType, $this->acceptedContentTypes)) {
+            throw new \CHttpException(400, \Yii::t('api', 'Bad Request'));
+        }
+        $filterChain->run();
+    }
 
     /**
      * @return Response
