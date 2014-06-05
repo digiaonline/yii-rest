@@ -16,6 +16,11 @@ namespace nordsoftware\yii_rest\components;
 class WebApplication extends \CWebApplication
 {
     /**
+     * @var string the response data serializer class to use.
+     */
+    public $serializer = 'nordsoftware\yii_rest\components\Serializer';
+
+    /**
      * @inheritdoc
      */
     public function displayError($code, $message, $file, $line)
@@ -39,7 +44,7 @@ class WebApplication extends \CWebApplication
     {
         $response = new Response();
         $response->setStatusCode($data->status);
-        $response->data = $data;
+        $response->data = \Yii::createComponent(array('class' => $this->serializer))->serialize($data);
         $response->send();
     }
 }

@@ -17,6 +17,11 @@ namespace nordsoftware\yii_rest\components;
 class ErrorHandler extends \CErrorHandler
 {
     /**
+     * @var string the response data serializer class to use.
+     */
+    public $serializer = 'nordsoftware\yii_rest\components\Serializer';
+
+    /**
      * @inheritdoc
      */
     protected function handleError($event)
@@ -40,7 +45,7 @@ class ErrorHandler extends \CErrorHandler
     {
         $response = new Response();
         $response->setStatusCode($data->status);
-        $response->data = $data;
+        $response->data = \Yii::createComponent(array('class' => $this->serializer))->serialize($data);
         $response->send();
     }
 }

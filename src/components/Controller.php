@@ -17,77 +17,14 @@ namespace nordsoftware\yii_rest\components;
 abstract class Controller extends \CController
 {
     /**
-     * @var string the model class name. This property must be set.
+     * @var string the response data serializer class to use.
      */
-    public $modelClass;
+    public $serializer = 'nordsoftware\yii_rest\components\Serializer';
 
     /**
      * @var Response the response object.
      */
     private $_response;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        if ($this->modelClass === null) {
-            throw new \CException('The "modelClass" property must be set.');
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function filters()
-    {
-        return array(
-            'accessControl',
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function accessRules()
-    {
-        return array(
-            // Logged in users can do whatever they want to.
-            array('allow', 'users' => array('@')),
-            // Not logged in users can't do anything except above.
-            array('deny'),
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function actions()
-    {
-        return array(
-            'index' => array(
-                'class' => ' nordsoftware\yii_rest\actions\IndexAction',
-                'modelClass' => $this->modelClass,
-            ),
-            'create' => array(
-                'class' => ' nordsoftware\yii_rest\actions\CreateAction',
-                'modelClass' => $this->modelClass,
-            ),
-            'view' => array(
-                'class' => ' nordsoftware\yii_rest\actions\ViewAction',
-                'modelClass' => $this->modelClass,
-            ),
-            'update' => array(
-                'class' => ' nordsoftware\yii_rest\actions\UpdateAction',
-                'modelClass' => $this->modelClass,
-            ),
-            'delete' => array(
-                'class' => ' nordsoftware\yii_rest\actions\DeleteAction',
-                'modelClass' => $this->modelClass,
-            ),
-        );
-    }
 
     /**
      * @return Response
@@ -108,53 +45,7 @@ abstract class Controller extends \CController
     public function sendResponse($data, $statusCode = 200)
     {
         $this->response->setStatusCode($statusCode);
-        $this->response->data = $this->serializeData($data);
+        $this->response->data = \Yii::createComponent(array('class' => $this->serializer))->serialize($data);
         $this->response->send();
-    }
-
-    /**
-     * Serializes the response data.
-     * @param mixed $data the data to serialize.
-     * @return mixed the serialized data.
-     */
-    protected function serializeData($data)
-    {
-        if ($data instanceof \CModel) {
-            return $this->serializeModel($data);
-        } elseif ($data instanceof \CDataProvider) {
-            return $this->serializeDataProvider($data);
-        }
-        return $data;
-    }
-
-    /**
-     * Serializes a model.
-     * @param \CModel $model the model.
-     * @return \CModel|array the model or an array containing the model errors.
-     */
-    protected function serializeModel(\CModel $model)
-    {
-        if ($model->hasErrors()) {
-            $result = array();
-            $this->response->setStatusCode(422);
-            foreach ($model->getErrors() as $attribute => $errors) {
-                $result[] = array(
-                    'field' => $attribute,
-                    'errors' => $errors,
-                );
-            }
-            return $result;
-        }
-        return $model;
-    }
-
-    /**
-     * Serializes a data provider.
-     * @param \CDataProvider $dataProvider the provider.
-     * @return array the data.
-     */
-    protected function serializeDataProvider(\CDataProvider $dataProvider)
-    {
-        return $dataProvider->getData();
     }
 }
