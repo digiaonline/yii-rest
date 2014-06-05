@@ -21,7 +21,7 @@ class CreateAction extends Action
     {
         /** @var \CActiveRecord $model */
         $model = new $this->modelClass();
-        $model->attributes = $_POST;
+        $model->attributes = \Yii::app()->getRequest()->getBodyParams();
         $model->save();
         $this->sendResponse($model);
     }

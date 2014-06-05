@@ -21,7 +21,7 @@ class UpdateAction extends Action
     public function run($id)
     {
         $model = $this->findModel($id);
-        $model->attributes = $_POST;
+        $model->attributes = \Yii::app()->getRequest()->getBodyParams();
         $model->save();
         $this->sendResponse($model);
     }
