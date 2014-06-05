@@ -20,16 +20,7 @@ class WebApplication extends \CWebApplication
      */
     public function displayError($code, $message, $file, $line)
     {
-        $response = new Response();
-        $data = array(
-            'type' => 'PHP Error',
-            'code' => $code,
-            'status' => 500,
-        );
-        $data['message'] = YII_DEBUG ? "{$message} ({$file}:{$line})" : $message;
-        $response->data = $data;
-        $response->setStatusCode($data['status']);
-        $response->send();
+        $this->sendErrorResponse(new ErrorResponseData($code, $message, $file, $line));
     }
 
     /**
@@ -37,17 +28,18 @@ class WebApplication extends \CWebApplication
      */
     public function displayException($exception)
     {
+        $this->sendErrorResponse(new ExceptionResponseData($exception));
+    }
+
+    /**
+     * Sends an error response to the client.
+     * @param ExceptionResponseData|ErrorResponseData $data the response data.
+     */
+    public function sendErrorResponse($data)
+    {
         $response = new Response();
-        $data = array(
-            'type' => get_class($exception),
-            'code' => $exception->getCode(),
-            'status' => ($exception instanceof \CHttpException) ? $exception->statusCode : 500,
-        );
-        $data['message'] = YII_DEBUG
-            ? "{$exception->getMessage()} ({$exception->getFile()}:{$exception->getLine()})"
-            : $exception->getMessage();
+        $response->setStatusCode($data->status);
         $response->data = $data;
-        $response->setStatusCode($data['status']);
         $response->send();
     }
 }

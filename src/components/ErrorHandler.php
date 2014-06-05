@@ -12,6 +12,7 @@ namespace nordsoftware\yii_rest\components;
 /**
  * ErrorHandler class for the REST application.
  * Overrides error and exception handling methods so that a proper REST response is always returned by the API.
+ * The error handler can be used without the WebApplication included the the yii-rest extension.
  */
 class ErrorHandler extends \CErrorHandler
 {
@@ -20,7 +21,7 @@ class ErrorHandler extends \CErrorHandler
      */
     protected function handleError($event)
     {
-        \Yii::app()->displayError($event->code, $event->message, $event->file, $event->line);
+        $this->sendResponse(new ErrorResponseData($event->code, $event->message, $event->file, $event->line));
     }
 
     /**
@@ -28,6 +29,18 @@ class ErrorHandler extends \CErrorHandler
      */
     protected function handleException($exception)
     {
-        \Yii::app()->displayException($exception);
+        $this->sendResponse(new ExceptionResponseData($exception));
+    }
+
+    /**
+     * Sends an error response to the client.
+     * @param ExceptionResponseData|ErrorResponseData $data the response data.
+     */
+    protected function sendResponse($data)
+    {
+        $response = new Response();
+        $response->setStatusCode($data->status);
+        $response->data = $data;
+        $response->send();
     }
 }
