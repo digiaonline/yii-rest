@@ -17,7 +17,7 @@ class HeaderCollection implements \IteratorAggregate, \ArrayAccess, \Countable
     /**
      * @var array the headers in this collection (indexed by the header names)
      */
-    private $_headers = [];
+    private $_headers = array();
 
     /**
      * Returns an iterator for traversing the headers in the collection.
@@ -147,7 +147,7 @@ class HeaderCollection implements \IteratorAggregate, \ArrayAccess, \Countable
      */
     public function removeAll()
     {
-        $this->_headers = [];
+        $this->_headers = array();
     }
 
     /**
