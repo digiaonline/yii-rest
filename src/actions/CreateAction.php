@@ -23,6 +23,6 @@ class CreateAction extends Action
         $model = new $this->modelClass();
         $model->attributes = \Yii::app()->getRequest()->getBodyParams();
         $model->save();
-        $this->sendResponse($model);
+        $this->sendResponse($model, 201);
     }
 }
