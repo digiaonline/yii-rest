@@ -33,7 +33,7 @@ abstract class Action extends \CAction
     {
         $model = \CActiveRecord::model($this->modelClass)->findByPk($id);
         if ($model === null) {
-            throw new \CHttpException(404, \Yii::t('\nordsoftware\yii_rest\components', 'Not Found'));
+            throw new \CHttpException(404, 'Not Found');
         }
         return $model;
     }

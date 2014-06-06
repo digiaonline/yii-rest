@@ -12,20 +12,19 @@ namespace nordsoftware\yii_rest\components;
 /**
  * WebApplication class for the REST application.
  * Overrides error and exception handling methods so that a proper REST response is always returned by the API.
+ * It is not required, but still recommended, to use this WebApplication for the REST API.
+ *
+ * @property Response $response
  */
 class WebApplication extends \CWebApplication
 {
-    /**
-     * @var string the response data serializer class to use.
-     */
-    public $serializer = 'nordsoftware\yii_rest\components\Serializer';
-
     /**
      * @inheritdoc
      */
     public function displayError($code, $message, $file, $line)
     {
-        $this->sendErrorResponse(new ErrorResponseData($code, $message, $file, $line));
+        $errorResponse = new ErrorResponseData($code, $message, $file, $line);
+        $this->sendResponse($errorResponse, $errorResponse->status);
     }
 
     /**
@@ -33,21 +32,27 @@ class WebApplication extends \CWebApplication
      */
     public function displayException($exception)
     {
-        $this->sendErrorResponse(new ExceptionResponseData($exception));
+        $exceptionResponse = new ExceptionResponseData($exception);
+        $this->sendResponse($exceptionResponse, $exceptionResponse->status);
     }
 
     /**
-     * Sends an error response to the client.
-     * @param ExceptionResponseData|ErrorResponseData $data the response data.
+     * Getter for the REST response object.
+     * @return Response
      */
-    public function sendErrorResponse($data)
+    public function getResponse()
     {
-        $response = new Response();
-        $response->setStatusCode($data->status);
-        $response->data = \Yii::createComponent(array(
-                'class' => $this->serializer,
-                'response' => $response,
-            ))->serialize($data);
-        $response->send();
+        return $this->getComponent('response');
+    }
+
+    /**
+     * Sends the API response to the client.
+     * @param mixed $data the data to send as the response body.
+     * @param int $statusCode the status code of the response.
+     * @throws \CHttpException if response component cannot be found.
+     */
+    public function sendResponse($data, $statusCode = 200)
+    {
+        $this->getResponse()->send($data, $statusCode);
     }
 }

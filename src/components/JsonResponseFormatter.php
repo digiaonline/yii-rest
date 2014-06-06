@@ -12,15 +12,24 @@ namespace nordsoftware\yii_rest\components;
 /**
  * JsonResponseFormatter formats the given data into a JSON response content.
  */
-class JsonResponseFormatter extends \CComponent
+class JsonResponseFormatter extends ResponseFormatter
 {
     /**
-     * Formats the specified response.
-     * @param Response $response the response to be formatted.
+     * @var string the response content type.
+     */
+    public $contentType = 'application/json';
+
+    /**
+     * @var string the response charset.
+     */
+    public $charset = 'UTF-8';
+
+    /**
+     * @inheritdoc
      */
     public function format(Response $response)
     {
-        $response->getHeaders()->set('Content-Type', 'application/json; charset=UTF-8');
+        $response->headers->set('Content-Type', "{$this->contentType}; charset={$this->charset}");
         $response->content = \CJSON::encode($response->data);
     }
 }

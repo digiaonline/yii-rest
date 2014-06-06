@@ -15,35 +15,31 @@ namespace nordsoftware\yii_rest\components;
 class Serializer extends \CComponent
 {
     /**
-     * @var Response the response object.
-     */
-    public $response;
-
-    /**
      * Serializes the response data.
-     * @param mixed $data the response data.
-     * @return array the serialized data.
+     * @param Response $response the response object.
      */
-    public function serialize($data)
+    public function serialize(Response $response)
     {
-        if ($data instanceof \CModel) {
-            return $this->serializeModel($data);
-        } elseif ($data instanceof \CDataProvider) {
-            return $this->serializeDataProvider($data);
+        if ($response->data instanceof \CModel) {
+            $response->data = $this->serializeModel($response->data, $response);
+        } elseif ($response->data instanceof \CDataProvider) {
+            $response->data = $this->serializeDataProvider($response->data);
+        } else {
+            $response->data = $this->toArray($response->data);
         }
-        return $this->toArray($data);
     }
 
     /**
      * Serializes a model.
      * @param \CModel $model the model.
+     * @param Response $response the response object.
      * @return \CModel|array the model or an array containing the model errors.
      */
-    protected function serializeModel(\CModel $model)
+    protected function serializeModel(\CModel $model, Response $response)
     {
         if ($model->hasErrors()) {
             $result = array();
-            $this->response->setStatusCode(422);
+            $response->setStatusCode(422);
             foreach ($model->getErrors() as $attribute => $errors) {
                 $result[] = array(
                     'field' => $attribute,

@@ -12,8 +12,11 @@ namespace nordsoftware\yii_rest\components;
 /**
  * Response object that represents an HTTP response.
  * It holds the headers and content that is to be sent to the client and also controls the HTTP status code.
+ *
+ * @property HeaderCollection $headers
+ * @property int $statusCode
  */
-class Response extends \CComponent
+class Response extends \CApplicationComponent
 {
     const FORMAT_RAW = 'raw';
     const FORMAT_JSON = 'json';
@@ -24,14 +27,17 @@ class Response extends \CComponent
     public $format = self::FORMAT_JSON;
 
     /**
-     * @var mixed the original response data.
+     * var array the formatters for converting data into the response content of the specified $this->format.
      */
-    public $data;
+    public $formatters = array(
+        self::FORMAT_JSON => array(
+            'class' => 'nordsoftware\yii_rest\components\JsonResponseFormatter',
+        )
+    );
 
-    /**
-     * @var string the response content.
-     */
-    public $content;
+    public $serializer = array(
+        'class' => 'nordsoftware\yii_rest\components\Serializer',
+    );
 
     /**
      * @var string the charset of the text response.
@@ -42,6 +48,16 @@ class Response extends \CComponent
      * @var string the version of the HTTP protocol to use.
      */
     public $version;
+
+    /**
+     * @var mixed the original response data.
+     */
+    public $data;
+
+    /**
+     * @var string the response content.
+     */
+    public $content;
 
     /**
      * @var string the HTTP status description that comes together with the status code.
@@ -57,13 +73,6 @@ class Response extends \CComponent
      * @var HeaderCollection
      */
     private $_headers;
-
-    /**
-     * var array the formatters for converting data into the response content of the specified $this->format.
-     */
-    public static $formatters = array(
-        self::FORMAT_JSON => 'nordsoftware\yii_rest\components\JsonResponseFormatter',
-    );
 
     /**
      * @var array list of HTTP status codes and the corresponding texts.
@@ -137,6 +146,24 @@ class Response extends \CComponent
     );
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        if ($this->version === null) {
+            if (isset($_SERVER['SERVER_PROTOCOL']) && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0') {
+                $this->version = '1.0';
+            } else {
+                $this->version = '1.1';
+            }
+        }
+        if ($this->charset === null) {
+            $this->charset = \Yii::app()->charset;
+        }
+    }
+
+    /**
      * @return integer the HTTP status code to send with the response.
      */
     public function getStatusCode()
@@ -153,12 +180,9 @@ class Response extends \CComponent
      */
     public function setStatusCode($value, $text = null)
     {
-        if ($value === null) {
-            $value = 200;
-        }
         $this->statusCode = (int)$value;
-        if ($this->getIsInvalid()) {
-            throw new \CException(sprintf('The HTTP status code is invalid: %s', $value));
+        if ($this->statusCode < 100 || $this->statusCode >= 600) {
+            throw new \CException(sprintf('Invalid HTTP status code: %s.', $value));
         }
         if ($text === null) {
             $this->statusText = isset(static::$httpStatuses[$this->statusCode])
@@ -184,35 +208,28 @@ class Response extends \CComponent
 
     /**
      * Sends the response to the client.
+     * @param mixed $data the data to send as the response body.
+     * @param int $statusCode the status code of the response.
      */
-    public function send()
+    public function send($data, $statusCode = 200)
     {
-        $this->prepare();
+        $this->data = $data;
+        $this->setStatusCode($statusCode);
+        $this->formatContent();
         $this->sendHeaders();
         $this->sendContent();
     }
 
     /**
      * Prepares the response before it is sent.
-     * @throws \CException
+     * @throws \CException if the content cannot be formatted.
      */
-    protected function prepare()
+    protected function formatContent()
     {
-        if ($this->version === null) {
-            if (isset($_SERVER['SERVER_PROTOCOL']) && $_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0') {
-                $this->version = '1.0';
-            } else {
-                $this->version = '1.1';
-            }
-        }
+        \Yii::createComponent($this->serializer)->serialize($this);
 
-        if ($this->charset === null) {
-            $this->charset = \Yii::app()->charset;
-        }
-
-        if (isset(static::$formatters[$this->format])) {
-            $formatter = \Yii::createComponent(array('class' => static::$formatters[$this->format]));
-            $formatter->format($this);
+        if (isset($this->formatters[$this->format])) {
+            \Yii::createComponent($this->formatters[$this->format])->format($this);
         } elseif ($this->format === self::FORMAT_RAW) {
             $this->content = $this->data;
         } else {
@@ -220,7 +237,7 @@ class Response extends \CComponent
         }
 
         if (is_array($this->content)) {
-            throw new \CException('Response content must not be an array.');
+            throw new \CException('Response.content must not be an array.');
         } elseif (is_object($this->content)) {
             if (method_exists($this->content, '__toString')) {
                 $this->content = $this->content->__toString();
@@ -255,13 +272,5 @@ class Response extends \CComponent
     protected function sendContent()
     {
         echo $this->content;
-    }
-
-    /**
-     * @return boolean whether this response has a valid status code.
-     */
-    public function getIsInvalid()
-    {
-        return $this->getStatusCode() < 100 || $this->getStatusCode() >= 600;
     }
 }

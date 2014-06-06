@@ -12,21 +12,17 @@ namespace nordsoftware\yii_rest\components;
 /**
  * ErrorHandler class for the REST application.
  * Overrides error and exception handling methods so that a proper REST response is always returned by the API.
- * The error handler can be used without the WebApplication included the the yii-rest extension.
+ * This error handler can be used without the WebApplication included in the extension.
  */
 class ErrorHandler extends \CErrorHandler
 {
-    /**
-     * @var string the response data serializer class to use.
-     */
-    public $serializer = 'nordsoftware\yii_rest\components\Serializer';
-
     /**
      * @inheritdoc
      */
     protected function handleError($event)
     {
-        $this->sendResponse(new ErrorResponseData($event->code, $event->message, $event->file, $event->line));
+        $errorResponse = new ErrorResponseData($event->code, $event->message, $event->file, $event->line);
+        $this->sendResponse($errorResponse, $errorResponse->status);
     }
 
     /**
@@ -34,21 +30,18 @@ class ErrorHandler extends \CErrorHandler
      */
     protected function handleException($exception)
     {
-        $this->sendResponse(new ExceptionResponseData($exception));
+        $exceptionResponse = new ExceptionResponseData($exception);
+        $this->sendResponse($exceptionResponse, $exceptionResponse->status);
     }
 
     /**
-     * Sends an error response to the client.
-     * @param ExceptionResponseData|ErrorResponseData $data the response data.
+     * Sends the API response to the client.
+     * @param mixed $data the data to send as the response body.
+     * @param int $statusCode the status code of the response.
+     * @throws \CHttpException if response component cannot be found.
      */
-    protected function sendResponse($data)
+    protected function sendResponse($data, $statusCode = 200)
     {
-        $response = new Response();
-        $response->setStatusCode($data->status);
-        $response->data = \Yii::createComponent(array(
-                'class' => $this->serializer,
-                'response' => $response,
-            ))->serialize($data);
-        $response->send();
+        \Yii::app()->getComponent('response')->send($data, $statusCode);
     }
 }
