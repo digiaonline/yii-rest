@@ -125,7 +125,7 @@ class Request extends \CHttpRequest
                 continue;
             }
             $values = [
-                'q' => [$i, array_shift($params), 1],
+                'q' => array($i, array_shift($params), 1),
             ];
             foreach ($params as $param) {
                 if (strpos($param, '=') !== false) {
