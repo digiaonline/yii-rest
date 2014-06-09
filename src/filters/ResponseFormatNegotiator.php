@@ -35,17 +35,19 @@ class ResponseFormatNegotiator extends \CFilter
 
             $types = $request->getAcceptableContentTypes();
             if (empty($types)) {
+                $types['*/*'] = array();
+            }
+            foreach ($types as $contentType => $params) {
+                if (isset($this->formats[$contentType])) {
+                    $response->format = $this->formats[$contentType];
+                    return true;
+                }
+            }
+            if (isset($types['*/*'])) {
                 // any format will do, choose the first one defined.
                 foreach ($this->formats as $responseFormat) {
                     $response->format = $responseFormat;
                     return true;
-                }
-            } else {
-                foreach ($types as $contentType => $params) {
-                    if (isset($this->formats[$contentType])) {
-                        $response->format = $this->formats[$contentType];
-                        return true;
-                    }
                 }
             }
 
