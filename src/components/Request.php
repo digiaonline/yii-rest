@@ -124,9 +124,9 @@ class Request extends \CHttpRequest
             if (empty($params)) {
                 continue;
             }
-            $values = [
+            $values = array(
                 'q' => array($i, array_shift($params), 1),
-            ];
+            );
             foreach ($params as $param) {
                 if (strpos($param, '=') !== false) {
                     list ($key, $value) = explode('=', $param, 2);
