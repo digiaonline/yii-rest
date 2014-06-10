@@ -22,6 +22,6 @@ class DeleteAction extends Action
     {
         $model = $this->findModel($id);
         $model->delete();
-        $this->sendResponse(array(), 204);
+        $this->sendResponse(null, 204);
     }
 }

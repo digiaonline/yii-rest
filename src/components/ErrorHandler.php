@@ -17,12 +17,25 @@ namespace nordsoftware\yii_rest\components;
 class ErrorHandler extends \CErrorHandler
 {
     /**
+     * @var array error/exception response object component configs.
+     */
+    public $responseDataObjects = array(
+        'error' => array(
+            'class' => 'nordsoftware\yii_rest\components\ErrorResponseData'
+        ),
+        'exception' => array(
+            'class' => 'nordsoftware\yii_rest\components\ExceptionResponseData'
+        ),
+    );
+
+    /**
      * @inheritdoc
      */
     protected function handleError($event)
     {
-        $errorResponse = new ErrorResponseData($event->code, $event->message, $event->file, $event->line);
-        $this->sendResponse($errorResponse, $errorResponse->status);
+        $object = $this->getResponseDataObject('error');
+        $object->init($event->code, $event->message, $event->file, $event->line);
+        $this->sendResponse($object, $object->status);
     }
 
     /**
@@ -30,8 +43,23 @@ class ErrorHandler extends \CErrorHandler
      */
     protected function handleException($exception)
     {
-        $exceptionResponse = new ExceptionResponseData($exception);
-        $this->sendResponse($exceptionResponse, $exceptionResponse->status);
+        $object = $this->getResponseDataObject('exception');
+        $object->init($exception);
+        $this->sendResponse($object, $object->status);
+    }
+
+    /**
+     * Creates the response data object specified by given name.
+     * @param string $name the response data object name.
+     * @return ErrorResponseData|ExceptionResponseData the response data object.
+     * @throws \CException if the response data object cannot be created.
+     */
+    protected function getResponseDataObject($name)
+    {
+        if (!isset($this->responseDataObjects[$name])) {
+            throw new \CException(sprintf('Failed to create response data object %s.', $name));
+        }
+        return \Yii::createComponent($this->responseDataObjects[$name]);
     }
 
     /**

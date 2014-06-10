@@ -43,11 +43,10 @@ class ExceptionResponseData extends ResponseData
     public $trace;
 
     /**
-     * Constructor.
      * Applies the data from the given exception instance to this response.
      * @param \Exception $e the exception instance.
      */
-    public function __construct(\Exception $e)
+    public function init(\Exception $e)
     {
         $this->type = get_class($e);
         $this->code = $e->getCode();

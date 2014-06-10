@@ -35,14 +35,13 @@ class ErrorResponseData extends ResponseData
     public $message;
 
     /**
-     * Constructor.
      * Applies the error data.
      * @param int $code the error code.
      * @param string $message the error message.
      * @param string $file the file the error occurred in.
      * @param int $line the line in the file the error occurred in.
      */
-    public function __construct($code, $message, $file, $line)
+    public function init($code, $message, $file, $line)
     {
         $this->code = $code;
         $this->message = YII_DEBUG ? "{$message} ({$file}:{$line})" : $message;

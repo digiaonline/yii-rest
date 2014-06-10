@@ -19,12 +19,25 @@ namespace nordsoftware\yii_rest\components;
 class WebApplication extends \CWebApplication
 {
     /**
+     * @var array error/exception response object component configs.
+     */
+    public $responseDataObjects = array(
+        'error' => array(
+            'class' => 'nordsoftware\yii_rest\components\ErrorResponseData'
+        ),
+        'exception' => array(
+            'class' => 'nordsoftware\yii_rest\components\ExceptionResponseData'
+        ),
+    );
+
+    /**
      * @inheritdoc
      */
     public function displayError($code, $message, $file, $line)
     {
-        $errorResponse = new ErrorResponseData($code, $message, $file, $line);
-        $this->sendResponse($errorResponse, $errorResponse->status);
+        $object = $this->getResponseDataObject('error');
+        $object->init($code, $message, $file, $line);
+        $this->sendResponse($object, $object->status);
     }
 
     /**
@@ -32,8 +45,23 @@ class WebApplication extends \CWebApplication
      */
     public function displayException($exception)
     {
-        $exceptionResponse = new ExceptionResponseData($exception);
-        $this->sendResponse($exceptionResponse, $exceptionResponse->status);
+        $object = $this->getResponseDataObject('exception');
+        $object->init($exception);
+        $this->sendResponse($object, $object->status);
+    }
+
+    /**
+     * Creates the response data object specified by given name.
+     * @param string $name the response data object name.
+     * @return ErrorResponseData|ExceptionResponseData the response data object.
+     * @throws \CException if the response data object cannot be created.
+     */
+    public function getResponseDataObject($name)
+    {
+        if (!isset($this->responseDataObjects[$name])) {
+            throw new \CException(sprintf('Failed to create response data object %s.', $name));
+        }
+        return \Yii::createComponent($this->responseDataObjects[$name]);
     }
 
     /**
